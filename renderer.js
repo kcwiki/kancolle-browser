@@ -1,17 +1,9 @@
-const { writeFile } = require('fs')
+const { outputFile } = require('fs-extra')
 const { remote } = require('electron')
 
 const webview = document.querySelector('webview')
 
 const isDataUrl = url => url.includes('api_start2')
-
-const parseApi = s => {
-  try {
-    return JSON.parse(s.replace(/^.*svdata=/, '')).api_data
-  } catch (_) {
-    return null
-  }
-}
 
 const requestMap = {}
 
@@ -38,12 +30,9 @@ const attachDebugger = () => {
         delete requestMap[params.requestId]
         debug.sendCommand('Network.getResponseBody', { requestId: params.requestId }, (err, data) => {
           if (err.code === undefined) {
-            const r = parseApi(data.body.toString())
-            if (r) {
-              writeFile(`${__dirname}/dist/api_start2.json`, JSON.stringify(r), () => {
-                remote.app.quit()
-              })
-            }
+            outputFile(`${__dirname}/dist/api_start2`, data.body, () => {
+              remote.app.quit()
+            })
           }
         })
       }

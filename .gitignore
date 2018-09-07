@@ -1,6 +1,6 @@
 .env
 coverage
-dist/api_start2.json
+dist
 node_modules
 npm-debug.log
 package-lock.json
