@@ -25,5 +25,5 @@ console.log('saved api_start2.schema.json')
 const ts = new Date().toISOString().split('T')[0]
 
 sh('git', '-C', `${__dirname}/../kancolle-data`, 'add', '.')
-sh('git', '-C', `${__dirname}/../kancolle-data`, 'commit', '-m', `"chore: autoupdate api_start2 for ${ts}"`)
+sh('git', '-C', `${__dirname}/../kancolle-data`, 'commit', '-m', `chore: autoupdate api_start2 for ${ts}`)
 sh('git', '-C', `${__dirname}/../kancolle-data`, 'push')

@@ -1,6 +1,8 @@
 const { outputFile } = require('fs-extra')
 const { remote } = require('electron')
 
+const env = remote.getGlobal('process').env
+
 const webview = document.querySelector('webview')
 
 const isDataUrl = url => url.includes('api_start2')
@@ -8,7 +10,7 @@ const isDataUrl = url => url.includes('api_start2')
 const requestMap = {}
 
 const attachDebugger = () => {
-  if (process.env.dev) {
+  if (env.electron_devtools && env.electron_devtools === 'true') {
     webview.openDevTools()
   }
   const debug = webview.getWebContents().debugger

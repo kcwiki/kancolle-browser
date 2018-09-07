@@ -1,5 +1,15 @@
 // https://github.com/poooi/poi/blob/master/app.js
 
+require('dotenv').config()
+
+if (process.env.electron_timeout) {
+  console.log(`will timeout after ${process.env.electron_timeout} seconds`)
+  setTimeout(() => {
+    console.log('timeout')
+    process.exit(1)
+  }, parseInt(process.env.electron_timeout) * 1000)
+}
+
 const { app, BrowserWindow } = require('electron')
 
 app.commandLine.appendSwitch('js-flags', '--harmony')
@@ -13,7 +23,7 @@ app.on('ready', () => {
 
   mainWindow.loadFile('index.html')
 
-  if (process.env.dev) {
+  if (process.env.electron_devtools && process.env.electron_devtools === 'true') {
     mainWindow.webContents.openDevTools()
   }
 
@@ -23,5 +33,6 @@ app.on('ready', () => {
 })
 
 app.on('window-all-closed', () => {
-  app.quit()
+  // app.quit()
+  process.exit(1)
 })
