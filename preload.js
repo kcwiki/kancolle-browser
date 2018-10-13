@@ -1,10 +1,21 @@
 // https://github.com/poooi/poi/blob/master/assets/js/webview-preload.js
 
-const { remote } = require('electron')
+const { remote, ipcRenderer } = require('electron')
+
+const wait = (test, finish, n = 1000) => {
+  setTimeout(() => {
+    const r = test()
+    if (r) {
+      finish(r)
+    } else {
+      wait(test, finish, n)
+    }
+  }, n)
+}
+
+const env = remote.getGlobal('process').env
 
 const webContent = remote.getCurrentWebContents()
-
-webContent.setAudioMuted(true)
 
 // webContent.addListener('dom-ready', () => {
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,4 +32,42 @@ document.addEventListener('DOMContentLoaded', () => {
   document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2019 09:00:09 GMT;domain=.dmm.com;path=/'
   document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2019 09:00:09 GMT;domain=.dmm.com;path=/netgame/'
   document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2019 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/'
+  // Catch API from game frame
+  if (env.api_method === 'axios') {
+    wait(
+      () =>
+        (((((document.getElementById('game_frame') || {}).contentWindow || {}).document || {}).getElementById('htmlWrap') || {}).contentWindow || {})
+          .axios,
+      axios => {
+        if (!axios.interceptors.response.handlers.length) {
+          axios.interceptors.response.use(res => {
+            ipcRenderer.sendToHost('game-api', res.config.url, res.data)
+            return res
+          })
+        }
+      }
+    )
+  } else if (env.api_method === 'xhr') {
+    wait(
+      () => ((((document.getElementById('game_frame') || {}).contentWindow || {}).document || {}).getElementById('htmlWrap') || {}).contentWindow,
+      gameWindow => {
+        if (!gameWindow.__XMLHttpRequestWrapper) {
+          gameWindow.__XMLHttpRequestWrapper = true
+          const send = gameWindow.XMLHttpRequest.prototype.send
+          gameWindow.XMLHttpRequest.prototype.send = function() {
+            const onreadystatechange = this.onreadystatechange
+            this.onreadystatechange = function() {
+              if (this.readyState === 4) {
+                ipcRenderer.sendToHost('game-api', this.responseURL, this.response)
+              }
+              if (onreadystatechange) {
+                return onreadystatechange.apply(this, arguments)
+              }
+            }
+            return send.apply(this, arguments)
+          }
+        }
+      }
+    )
+  }
 })
