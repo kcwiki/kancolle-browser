@@ -1,0 +1,27 @@
+<!-- https://github.com/poooi/poi/blob/master/views/kan-game-wrapper.es -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>kancolle-browser</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      webview {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <webview src="http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/" preload="./preload.js" disablewebsecurity></webview>
+    <script>
+      require('./renderer.js')
+    </script>
+  </body>
+</html>

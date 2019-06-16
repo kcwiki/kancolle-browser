@@ -4,7 +4,13 @@ const { remote, ipcRenderer } = require('electron')
 
 const wait = (test, finish, n = 1000) => {
   setTimeout(() => {
-    const r = test()
+    let r
+    try {
+      r = test()
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(e.toString())
+    }
     if (r) {
       finish(r)
     } else {
@@ -12,8 +18,6 @@ const wait = (test, finish, n = 1000) => {
     }
   }, n)
 }
-
-const env = remote.getGlobal('process').env
 
 const webContent = remote.getCurrentWebContents()
 
@@ -33,41 +37,38 @@ document.addEventListener('DOMContentLoaded', () => {
   document.cookie = 'ckcy=1;expires=Thu, 16-Jan-2020 00:00:00 GMT;domain=.dmm.com;path=/netgame/'
   document.cookie = 'ckcy=1;expires=Thu, 16-Jan-2020 00:00:00 GMT;domain=.dmm.com;path=/netgame_s/'
   // Catch API from game frame
-  if (env.api_method === 'axios') {
-    wait(
-      () =>
-        (((((document.getElementById('game_frame') || {}).contentWindow || {}).document || {}).getElementById('htmlWrap') || {}).contentWindow || {})
-          .axios,
-      axios => {
-        if (!axios.interceptors.response.handlers.length) {
-          axios.interceptors.response.use(res => {
-            ipcRenderer.sendToHost('game-api', res.config.url, res.data)
-            return res
-          })
-        }
+  wait(
+    () => document.getElementById('game_frame').contentWindow.document.getElementById('htmlWrap').contentWindow.axios,
+    axios => {
+      if (!axios.interceptors.response.handlers.length) {
+        axios.interceptors.response.use(res => {
+          ipcRenderer.sendToHost('game-api', res.config.url, res.data)
+          return res
+        })
       }
-    )
-  } else if (env.api_method === 'xhr') {
-    wait(
-      () => ((((document.getElementById('game_frame') || {}).contentWindow || {}).document || {}).getElementById('htmlWrap') || {}).contentWindow,
-      gameWindow => {
-        if (!gameWindow.__XMLHttpRequestWrapper) {
-          gameWindow.__XMLHttpRequestWrapper = true
-          const send = gameWindow.XMLHttpRequest.prototype.send
-          gameWindow.XMLHttpRequest.prototype.send = function() {
-            const onreadystatechange = this.onreadystatechange
-            this.onreadystatechange = function() {
-              if (this.readyState === 4) {
-                ipcRenderer.sendToHost('game-api', this.responseURL, this.response)
-              }
-              if (onreadystatechange) {
-                return onreadystatechange.apply(this, arguments)
-              }
+    },
+  )
+  /*
+  wait(
+    () => document.getElementById('game_frame').contentWindow.document.getElementById('htmlWrap').contentWindow,
+    gameWindow => {
+      if (!gameWindow.__XMLHttpRequestWrapper) {
+        gameWindow.__XMLHttpRequestWrapper = true
+        const send = gameWindow.XMLHttpRequest.prototype.send
+        gameWindow.XMLHttpRequest.prototype.send = function() {
+          const onreadystatechange = this.onreadystatechange
+          this.onreadystatechange = function() {
+            if (this.readyState === 4) {
+              ipcRenderer.sendToHost('game-api', this.responseURL, this.response)
             }
-            return send.apply(this, arguments)
+            if (onreadystatechange) {
+              return onreadystatechange.apply(this, arguments)
+            }
           }
+          return send.apply(this, arguments)
         }
       }
-    )
-  }
+    },
+  )
+  */
 })

@@ -1,25 +1,56 @@
 {
-  "name": "kancolle-hack",
-  "version": "1.0.0",
-  "main": "main.js",
-  "author": "gk <gkpyon@gmail.com>",
+  "name": "@kancolle/browser",
+  "version": "1.0.3",
+  "description": "Minimal Electron-based KanColle browser",
+  "keywords": [
+    "kancolle",
+    "electron"
+  ],
   "license": "MIT",
-  "private": true,
+  "author": "gakada (https://github.com/gakada)",
+  "contributors": [],
+  "homepage": "https://github.com/kcwiki/kancolle-browser#readme",
+  "bugs": "https://github.com/kcwiki/kancolle-browser/issues",
+  "repository": "kcwiki/kancolle-browser",
+  "main": "src/main.js",
+  "files": [
+    "src"
+  ],
+  "bin": {
+    "kancolle-browser": "./src/run.js"
+  },
   "scripts": {
-    "test": "electron . && sleep 1 && node handle-api.js"
+    "format": "prettier --loglevel warn --write '**/*.{js,json,md,ts,yaml,yml}'",
+    "lint": "eslint --fix .",
+    "test": "yarn format && yarn lint",
+    "up": "yarn upgrade --latest"
+  },
+  "dependencies": {
+    "electron": "^4.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
-    "eslint": "^5.11.0",
-    "eslint-config-prettier": "^3.3.0",
-    "eslint-plugin-prettier": "^3.0.0",
-    "prettier": "^1.15.3"
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^5.0.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "prettier": "^1.18.2"
   },
-  "dependencies": {
-    "dotenv": "^6.2.0",
-    "electron": "^4.0.0",
-    "fs-extra": "^7.0.1",
-    "generate-schema": "^2.6.0",
-    "sort-keys": "^2.0.0"
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es6": true,
+      "node": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:prettier/recommended"
+    ],
+    "parser": "babel-eslint"
+  },
+  "prettier": {
+    "printWidth": 150,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
   }
 }
